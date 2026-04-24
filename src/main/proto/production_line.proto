@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package com.smartfactory;
+
+option java_package = "com.smartfactory.grpc";
+option java_outer_classname = "ProductionLineProto";
+option java_multiple_files = true;
+
+// ===========================
+// Messages
+// ===========================
+
+message MachineControlRequest {
+  string machine_id = 1;   // Machine to control
+  string command = 2;      // "START" or "STOP"
+  string operator_id = 3;  // ID of operator issuing command
+}
+
+message MachineControlResponse {
+  string machine_id = 1;       // Machine that was controlled
+  bool success = 2;            // true if command executed successfully
+  bool is_running = 3;         // Current running state after command
+  string confirmation = 4;     // Human-readable confirmation message
+  string timestamp = 5;        // ISO 8601 timestamp of command execution
+}
+
+message ProductionCommand {
+  string machine_id = 1;      // Target machine
+  int32 target_output = 2;    // Desired output rate (units per hour)
+  string operator_id = 3;     // ID of operator sending command
+}
+
+message ProductionStatus {
+  string machine_id = 1;        // Machine reporting status
+  int32 current_output = 2;     // Current output rate (units per hour)
+  float efficiency = 3;         // Efficiency percentage (0.0 - 100.0)
+  int32 units_produced = 4;     // Total units produced in session
+  string warning = 5;           // Warning message if any issue detected
+  string timestamp = 6;         // ISO 8601 timestamp of status report
+}
+
+// ===========================
+// Service
+// ===========================
+
+service ProductionLineController {
+
+  // Unary - start or stop a machine on the production line
+  rpc StartStopMachine (MachineControlRequest)
+      returns (MachineControlResponse);
+
+  // Bidirectional streaming - send commands, receive live production stats
+  rpc MonitorProduction (stream ProductionCommand)
+      returns (stream ProductionStatus);
+}

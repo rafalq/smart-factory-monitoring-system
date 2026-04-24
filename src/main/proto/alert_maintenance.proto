@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package com.smartfactory;
+
+option java_package = "com.smartfactory.grpc";
+option java_outer_classname = "AlertMaintenanceProto";
+option java_multiple_files = true;
+
+// ===========================
+// Messages
+// ===========================
+
+message AlertRequest {
+  string machine_id = 1;    // Machine triggering the alert
+  string alert_type = 2;    // e.g. "OVERHEAT", "VIBRATION", "PRESSURE"
+  int32 severity = 3;       // Severity level 1 (low) to 5 (critical)
+  string description = 4;   // Detailed description of the alert
+}
+
+message AlertResponse {
+  string alert_id = 1;          // Unique generated alert ID
+  string machine_id = 2;        // Machine that triggered the alert
+  bool acknowledged = 3;        // true if alert was registered successfully
+  string confirmation = 4;      // Human-readable confirmation message
+  string timestamp = 5;         // ISO 8601 timestamp of alert creation
+}
+
+message AlertStreamRequest {
+  int32 min_severity = 1;   // Only stream alerts at or above this severity
+}
+
+message LiveAlert {
+  string alert_id = 1;      // Unique alert ID
+  string machine_id = 2;    // Machine that triggered the alert
+  string alert_type = 3;    // Type of alert
+  int32 severity = 4;       // Severity level 1-5
+  string description = 5;   // Alert description
+  string timestamp = 6;     // ISO 8601 timestamp
+}
+
+message MaintenanceReport {
+  string machine_id = 1;      // Machine that was serviced
+  string technician_id = 2;   // ID of technician performing maintenance
+  string action_taken = 3;    // Description of maintenance action
+  string parts_replaced = 4;  // Parts replaced during maintenance
+  string timestamp = 5;       // ISO 8601 timestamp of maintenance
+}
+
+message MaintenanceSummary {
+  int32 reports_received = 1;    // Total maintenance reports submitted
+  int32 machines_serviced = 2;   // Number of unique machines serviced
+  string confirmation = 3;       // Overall confirmation message
+  string timestamp = 4;          // ISO 8601 timestamp of summary
+}
+
+// ===========================
+// Service
+// ===========================
+
+service AlertMaintenanceService {
+
+  // Unary - raise a new alert for a machine fault
+  rpc RaiseAlert (AlertRequest)
+      returns (AlertResponse);
+
+  // Server-side streaming - stream live alerts to client
+  rpc StreamAlerts (AlertStreamRequest)
+      returns (stream LiveAlert);
+
+  // Client-side streaming - submit multiple maintenance reports
+  rpc SubmitMaintenanceReports (stream MaintenanceReport)
+      returns (MaintenanceSummary);
+}

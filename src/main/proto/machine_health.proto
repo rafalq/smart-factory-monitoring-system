@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package com.smartfactory;
+
+option java_package = "com.smartfactory.grpc";
+option java_outer_classname = "MachineHealthProto";
+option java_multiple_files = true;
+
+// ===========================
+// Messages
+// ===========================
+
+message MachineStatusRequest {
+  string machine_id = 1;       // Unique machine identifier
+}
+
+message MachineStatusResponse {
+  string machine_id = 1;       // Unique machine identifier
+  string machine_name = 2;     // Human-readable machine name
+  float temperature = 3;       // Current temperature in Celsius
+  float vibration_level = 4;   // Vibration level in mm/s
+  bool is_operational = 5;     // true = running, false = stopped/fault
+  string status_message = 6;   // Additional status description
+}
+
+message TemperatureStreamRequest {
+  string machine_id = 1;       // Machine to monitor
+  int32 interval_seconds = 2;  // How often to send readings
+}
+
+message TemperatureReading {
+  string machine_id = 1;       // Machine identifier
+  float temperature = 2;       // Temperature reading in Celsius
+  string timestamp = 3;        // ISO 8601 timestamp of reading
+  bool is_critical = 4;        // true if above critical threshold
+}
+
+message SensorData {
+  string machine_id = 1;       // Machine identifier
+  float temperature = 2;       // Temperature reading in Celsius
+  float vibration_level = 3;   // Vibration level in mm/s
+  float pressure = 4;          // Pressure reading in bar
+  string timestamp = 5;        // ISO 8601 timestamp of reading
+}
+
+message SensorDataSummary {
+  int32 readings_received = 1;   // Total number of readings received
+  float average_temperature = 2; // Average temperature across readings
+  float average_vibration = 3;   // Average vibration across readings
+  float average_pressure = 4;    // Average pressure across readings
+  string summary_message = 5;    // Overall health assessment
+}
+
+// ===========================
+// Service
+// ===========================
+
+service MachineHealthMonitor {
+
+  // Unary - check current status of a single machine
+  rpc CheckMachineStatus (MachineStatusRequest)
+      returns (MachineStatusResponse);
+
+  // Server-side streaming - stream temperature readings continuously
+  rpc StreamTemperature (TemperatureStreamRequest)
+      returns (stream TemperatureReading);
+
+  // Client-side streaming - send multiple sensor readings, get summary
+  rpc ReportSensorData (stream SensorData)
+      returns (SensorDataSummary);
+}
