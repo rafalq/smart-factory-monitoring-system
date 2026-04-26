@@ -153,4 +153,111 @@ public class MachineHealthMonitorImpl
                             .asRuntimeException());
         }
     }
+
+    // ===========================
+    // Client-side Streaming RPC
+    // ===========================
+
+    /**
+     * Client-side streaming RPC - receives multiple sensor readings from client
+     * and returns a summary of all received data.
+     *
+     * @param responseObserver used to send the final summary back to the client
+     * @return StreamObserver that processes each incoming sensor reading
+     */
+    @Override
+    public StreamObserver<SensorData> reportSensorData(
+            StreamObserver<SensorDataSummary> responseObserver) {
+
+        return new StreamObserver<SensorData>() {
+
+            private int readingsCount = 0;
+            private float totalTemperature = 0;
+            private float totalVibration = 0;
+            private float totalPressure = 0;
+            private String lastMachineId = "";
+
+            @Override
+            public void onNext(SensorData sensorData) {
+                readingsCount++;
+                totalTemperature += sensorData.getTemperature();
+                totalVibration += sensorData.getVibrationLevel();
+                totalPressure += sensorData.getPressure();
+                lastMachineId = sensorData.getMachineId();
+
+                logger.info("ReportSensorData received reading " + readingsCount
+                        + " from machine: " + lastMachineId
+                        + " temp: " + sensorData.getTemperature());
+
+                // Update machine state in registry if machine exists
+                if (registry.machineExists(lastMachineId)) {
+                    MachineData machine = registry.getMachine(lastMachineId);
+                    machine.setTemperature(sensorData.getTemperature());
+                    machine.setVibrationLevel(sensorData.getVibrationLevel());
+                    machine.setPressure(sensorData.getPressure());
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                logger.warning("ReportSensorData error: "
+                        + throwable.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                if (readingsCount == 0) {
+                    responseObserver.onError(
+                            Status.INVALID_ARGUMENT
+                                    .withDescription("No sensor readings received")
+                                    .asRuntimeException());
+                    return;
+                }
+
+                float avgTemperature = totalTemperature / readingsCount;
+                float avgVibration = totalVibration / readingsCount;
+                float avgPressure = totalPressure / readingsCount;
+
+                String summaryMessage = buildSummaryMessage(
+                        avgTemperature, avgVibration, avgPressure);
+
+                SensorDataSummary summary = SensorDataSummary.newBuilder()
+                        .setReadingsReceived(readingsCount)
+                        .setAverageTemperature(avgTemperature)
+                        .setAverageVibration(avgVibration)
+                        .setAveragePressure(avgPressure)
+                        .setSummaryMessage(summaryMessage)
+                        .build();
+
+                responseObserver.onNext(summary);
+                responseObserver.onCompleted();
+
+                logger.info("ReportSensorData completed - received "
+                        + readingsCount + " readings from machine: "
+                        + lastMachineId);
+            }
+
+            /**
+             * Builds a human-readable summary message based on average readings.
+             *
+             * @param avgTemp      average temperature
+             * @param avgVibration average vibration
+             * @param avgPressure  average pressure
+             * @return summary message string
+             */
+            private String buildSummaryMessage(
+                    float avgTemp, float avgVibration, float avgPressure) {
+
+                if (avgTemp >= MachineData.CRITICAL_TEMPERATURE) {
+                    return "CRITICAL: Average temperature exceeded safe limit";
+                } else if (avgVibration >= MachineData.CRITICAL_VIBRATION) {
+                    return "CRITICAL: Average vibration exceeded safe limit";
+                } else if (avgPressure >= MachineData.CRITICAL_PRESSURE) {
+                    return "CRITICAL: Average pressure exceeded safe limit";
+                } else {
+                    return "All readings within normal operating parameters";
+                }
+            }
+        };
+    }
 }
