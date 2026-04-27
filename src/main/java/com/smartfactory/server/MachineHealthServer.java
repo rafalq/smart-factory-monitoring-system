@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import com.smartfactory.naming.ServiceRegistrar;
+
 /**
  * gRPC server for the MachineHealthMonitor service.
  * Starts the server on a configured port and handles graceful shutdown.
@@ -20,6 +22,7 @@ public class MachineHealthServer {
     public static final int PORT = 50051;
 
     private Server server;
+    private ServiceRegistrar registrar;
 
     /**
      * Starts the gRPC server and registers the MachineHealthMonitor service.
@@ -35,7 +38,13 @@ public class MachineHealthServer {
 
         logger.info("MachineHealthServer started on port " + PORT);
 
-        // Register shutdown hook for graceful shutdown
+        // Register with JmDNS
+        registrar = new ServiceRegistrar();
+        registrar.registerService(
+                "MachineHealthMonitor",
+                PORT,
+                "Monitors machine temperature, vibration and health status");
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Shutting down MachineHealthServer...");
             try {
@@ -49,11 +58,14 @@ public class MachineHealthServer {
     }
 
     /**
-     * Stops the gRPC server gracefully within a timeout period.
+     * Stops the gRPC server and closes JmDNS registrar.
      *
      * @throws InterruptedException if shutdown is interrupted
      */
     public void stop() throws InterruptedException {
+        if (registrar != null) {
+            registrar.close();
+        }
         if (server != null) {
             server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
         }

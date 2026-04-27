@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import com.smartfactory.naming.ServiceRegistrar;
+
 /**
  * gRPC server for the AlertMaintenanceService.
  * Starts the server on a configured port and handles graceful shutdown.
@@ -20,11 +22,8 @@ public class AlertMaintenanceServer {
     private Server server;
     private AlertMaintenanceServiceImpl serviceImpl;
 
-    /**
-     * Starts the gRPC server and registers the AlertMaintenanceService.
-     *
-     * @throws IOException if the server fails to start
-     */
+    private ServiceRegistrar registrar;
+
     public void start() throws IOException {
         serviceImpl = new AlertMaintenanceServiceImpl();
 
@@ -35,6 +34,13 @@ public class AlertMaintenanceServer {
                 .start();
 
         logger.info("AlertMaintenanceServer started on port " + PORT);
+
+        // Register with JmDNS
+        registrar = new ServiceRegistrar();
+        registrar.registerService(
+                "AlertMaintenanceService",
+                PORT,
+                "Manages factory alerts and maintenance reports");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Shutting down AlertMaintenanceServer...");
@@ -48,12 +54,10 @@ public class AlertMaintenanceServer {
         }));
     }
 
-    /**
-     * Stops the gRPC server and shuts down the alert simulation scheduler.
-     *
-     * @throws InterruptedException if shutdown is interrupted
-     */
     public void stop() throws InterruptedException {
+        if (registrar != null) {
+            registrar.close();
+        }
         if (serviceImpl != null) {
             serviceImpl.shutdown();
         }

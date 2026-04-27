@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import com.smartfactory.naming.ServiceRegistrar;
+
 /**
  * gRPC server for the ProductionLineController service.
  * Starts the server on a configured port and handles graceful shutdown.
@@ -18,12 +20,8 @@ public class ProductionLineServer {
     public static final int PORT = 50052;
 
     private Server server;
+    private ServiceRegistrar registrar;
 
-    /**
-     * Starts the gRPC server and registers the ProductionLineController service.
-     *
-     * @throws IOException if the server fails to start
-     */
     public void start() throws IOException {
         server = ServerBuilder
                 .forPort(PORT)
@@ -32,6 +30,13 @@ public class ProductionLineServer {
                 .start();
 
         logger.info("ProductionLineServer started on port " + PORT);
+
+        // Register with JmDNS
+        registrar = new ServiceRegistrar();
+        registrar.registerService(
+                "ProductionLineController",
+                PORT,
+                "Controls production line machines and monitors output");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Shutting down ProductionLineServer...");
@@ -45,12 +50,10 @@ public class ProductionLineServer {
         }));
     }
 
-    /**
-     * Stops the gRPC server gracefully within a timeout period.
-     *
-     * @throws InterruptedException if shutdown is interrupted
-     */
     public void stop() throws InterruptedException {
+        if (registrar != null) {
+            registrar.close();
+        }
         if (server != null) {
             server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
         }
