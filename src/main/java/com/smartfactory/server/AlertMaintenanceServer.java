@@ -2,6 +2,7 @@ package com.smartfactory.server;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +30,9 @@ public class AlertMaintenanceServer {
 
         server = ServerBuilder
                 .forPort(PORT)
-                .addService(serviceImpl)
+                .addService(ServerInterceptors.intercept(
+                        serviceImpl,
+                        new AuthInterceptor()))
                 .build()
                 .start();
 

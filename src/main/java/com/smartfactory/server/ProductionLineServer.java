@@ -2,6 +2,7 @@ package com.smartfactory.server;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +26,9 @@ public class ProductionLineServer {
     public void start() throws IOException {
         server = ServerBuilder
                 .forPort(PORT)
-                .addService(new ProductionLineControllerImpl())
+                .addService(ServerInterceptors.intercept(
+                        new ProductionLineControllerImpl(),
+                        new AuthInterceptor()))
                 .build()
                 .start();
 

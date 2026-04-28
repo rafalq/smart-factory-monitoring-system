@@ -4,6 +4,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 // TODO: Consider adding interceptors for logging, authentication, or metrics in the future
 // import io.grpc.ServerInterceptors;
+import io.grpc.ServerInterceptors;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,9 @@ public class MachineHealthServer {
     public void start() throws IOException {
         server = ServerBuilder
                 .forPort(PORT)
-                .addService(new MachineHealthMonitorImpl())
+                .addService(ServerInterceptors.intercept(
+                        new MachineHealthMonitorImpl(),
+                        new AuthInterceptor()))
                 .build()
                 .start();
 
