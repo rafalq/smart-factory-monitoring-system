@@ -64,7 +64,7 @@ public class MachineHealthPanel extends JPanel {
     private JPanel createUnarySection() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(BorderFactory.createTitledBorder(
-                "Unary RPC – Check Machine Status"));
+                "Unary RPC - Check Machine Status"));
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT));
         machineIdCombo = new JComboBox<>(MACHINE_IDS);
@@ -74,9 +74,10 @@ public class MachineHealthPanel extends JPanel {
         controls.add(machineIdCombo);
         controls.add(checkBtn);
 
-        statusOutput = new JTextArea(4, 60);
+        statusOutput = new JTextArea(6, 60);
         statusOutput.setEditable(false);
         statusOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        statusOutput.setMargin(new Insets(8, 8, 8, 8));
 
         checkBtn.addActionListener(e -> checkMachineStatus());
 
@@ -96,7 +97,7 @@ public class MachineHealthPanel extends JPanel {
         if (response != null) {
             statusOutput.setText(
                     "Machine:     " + response.getMachineName() + "\n" +
-                            "Temperature: " + response.getTemperature() + " °C\n" +
+                            "Temperature: " + response.getTemperature() + " C\n" +
                             "Vibration:   " + response.getVibrationLevel() + " mm/s\n" +
                             "Operational: " + response.getIsOperational() + "\n" +
                             "Status:      " + response.getStatusMessage());
@@ -117,7 +118,7 @@ public class MachineHealthPanel extends JPanel {
     private JPanel createServerStreamingSection() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(BorderFactory.createTitledBorder(
-                "Server-side Streaming – Stream Temperature"));
+                "Server-side Streaming - Stream Temperature"));
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT));
         streamMachineCombo = new JComboBox<>(MACHINE_IDS);
@@ -130,9 +131,10 @@ public class MachineHealthPanel extends JPanel {
         controls.add(startStreamBtn);
         controls.add(stopStreamBtn);
 
-        streamOutput = new JTextArea(4, 60);
+        streamOutput = new JTextArea(6, 60);
         streamOutput.setEditable(false);
         streamOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        streamOutput.setMargin(new Insets(8, 8, 8, 8));
 
         startStreamBtn.addActionListener(e -> startTemperatureStream());
         stopStreamBtn.addActionListener(e -> stopTemperatureStream());
@@ -163,7 +165,7 @@ public class MachineHealthPanel extends JPanel {
                             return;
                         SwingUtilities.invokeLater(() -> streamOutput.append(
                                 "[" + reading.getTimestamp() + "] "
-                                        + reading.getTemperature() + " °C"
+                                        + reading.getTemperature() + " C"
                                         + (reading.getIsCritical() ? " [CRITICAL]" : "")
                                         + "\n"));
                     }
@@ -216,18 +218,23 @@ public class MachineHealthPanel extends JPanel {
     private JPanel createClientStreamingSection() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(BorderFactory.createTitledBorder(
-                "Client-side Streaming – Report Sensor Data"));
+                "Client-side Streaming - Report Sensor Data"));
 
-        // Table for entering sensor readings
         String[] columns = {
                 "Machine ID", "Temperature", "Vibration", "Pressure" };
         sensorTableModel = new DefaultTableModel(columns, 0);
         JTable sensorTable = new JTable(sensorTableModel);
+        sensorTable.setRowHeight(22);
 
         // Add default rows
         sensorTableModel.addRow(new Object[] { "M001", "72.5", "3.2", "4.1" });
         sensorTableModel.addRow(new Object[] { "M001", "75.1", "3.5", "4.3" });
         sensorTableModel.addRow(new Object[] { "M001", "78.3", "3.8", "4.5" });
+
+        // Fixed height scroll pane for table - only 4 rows visible
+        JScrollPane tableScrollPane = new JScrollPane(sensorTable);
+        tableScrollPane.setPreferredSize(new Dimension(0, 110));
+        tableScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton addRowBtn = new JButton("Add Row");
@@ -238,9 +245,10 @@ public class MachineHealthPanel extends JPanel {
         buttonPanel.add(removeRowBtn);
         buttonPanel.add(sendBtn);
 
-        sensorSummaryOutput = new JTextArea(3, 60);
+        sensorSummaryOutput = new JTextArea(4, 60);
         sensorSummaryOutput.setEditable(false);
         sensorSummaryOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        sensorSummaryOutput.setMargin(new Insets(8, 8, 8, 8));
 
         addRowBtn.addActionListener(e -> sensorTableModel.addRow(
                 new Object[] { "M001", "70.0", "3.0", "4.0" }));
@@ -254,7 +262,7 @@ public class MachineHealthPanel extends JPanel {
         sendBtn.addActionListener(e -> sendSensorData());
 
         JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.add(new JScrollPane(sensorTable), BorderLayout.CENTER);
+        tablePanel.add(tableScrollPane, BorderLayout.CENTER);
         tablePanel.add(buttonPanel, BorderLayout.SOUTH);
 
         panel.add(tablePanel, BorderLayout.CENTER);
@@ -292,8 +300,8 @@ public class MachineHealthPanel extends JPanel {
             SensorDataSummary summary = client.reportSensorData(readings);
             if (summary != null) {
                 sensorSummaryOutput.setText(
-                        "[SUCCESS] Readings received: " + summary.getReadingsReceived() + "\n" +
-                                "   Avg Temperature: " + summary.getAverageTemperature() + " °C\n" +
+                        "[OK] Readings received: " + summary.getReadingsReceived() + "\n" +
+                                "   Avg Temperature: " + summary.getAverageTemperature() + " C\n" +
                                 "   Summary: " + summary.getSummaryMessage());
             } else {
                 sensorSummaryOutput.setText("[ERROR] Failed to send sensor data");

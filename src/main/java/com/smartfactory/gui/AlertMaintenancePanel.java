@@ -88,9 +88,10 @@ public class AlertMaintenancePanel extends JPanel {
         controls.add(descriptionField);
         controls.add(raiseBtn);
 
-        alertOutput = new JTextArea(3, 60);
+        alertOutput = new JTextArea(6, 60);
         alertOutput.setEditable(false);
         alertOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        alertOutput.setMargin(new Insets(8, 8, 8, 8));
 
         raiseBtn.addActionListener(e -> raiseAlert());
 
@@ -153,9 +154,10 @@ public class AlertMaintenancePanel extends JPanel {
         controls.add(startAlertStreamBtn);
         controls.add(stopAlertStreamBtn);
 
-        alertStreamOutput = new JTextArea(5, 60);
+        alertStreamOutput = new JTextArea(6, 60);
         alertStreamOutput.setEditable(false);
         alertStreamOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        alertStreamOutput.setMargin(new Insets(8, 8, 8, 8));
 
         startAlertStreamBtn.addActionListener(e -> startAlertStream());
         stopAlertStreamBtn.addActionListener(e -> stopAlertStream());
@@ -245,12 +247,18 @@ public class AlertMaintenancePanel extends JPanel {
                 "Machine ID", "Technician ID", "Action Taken", "Parts Replaced" };
         maintenanceTableModel = new DefaultTableModel(columns, 0);
         JTable maintenanceTable = new JTable(maintenanceTableModel);
+        maintenanceTable.setRowHeight(22);
 
         // Add default rows
         maintenanceTableModel.addRow(new Object[] {
                 "M001", "tech-001", "Replaced cooling fan", "Fan CF-200" });
         maintenanceTableModel.addRow(new Object[] {
                 "M002", "tech-001", "Lubricated conveyor belt", "None" });
+
+        // Fixed height scroll pane for table - only 4 rows visible
+        JScrollPane tableScrollPane = new JScrollPane(maintenanceTable);
+        tableScrollPane.setPreferredSize(new Dimension(0, 110));
+        tableScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton addRowBtn = new JButton("Add Row");
@@ -261,9 +269,10 @@ public class AlertMaintenancePanel extends JPanel {
         buttonPanel.add(removeRowBtn);
         buttonPanel.add(submitBtn);
 
-        maintenanceSummaryOutput = new JTextArea(3, 60);
+        maintenanceSummaryOutput = new JTextArea(4, 60);
         maintenanceSummaryOutput.setEditable(false);
         maintenanceSummaryOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        maintenanceSummaryOutput.setMargin(new Insets(8, 8, 8, 8));
 
         addRowBtn.addActionListener(e -> maintenanceTableModel.addRow(new Object[] {
                 "M001", "tech-001", "Inspection", "None" }));
@@ -277,7 +286,7 @@ public class AlertMaintenancePanel extends JPanel {
         submitBtn.addActionListener(e -> submitMaintenanceReports());
 
         JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.add(new JScrollPane(maintenanceTable), BorderLayout.CENTER);
+        tablePanel.add(tableScrollPane, BorderLayout.CENTER);
         tablePanel.add(buttonPanel, BorderLayout.SOUTH);
 
         panel.add(tablePanel, BorderLayout.CENTER);
