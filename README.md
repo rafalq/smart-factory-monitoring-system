@@ -60,4 +60,36 @@ smart-factory-monitoring-system/
 ```
 
 ## Setup and Running
-*Instructions will be added as the project develops.*
+
+### Prerequisites
+- Java 21+
+- Maven 3.9+
+
+### Build
+```bash
+mvn compile
+```
+
+### Run the GUI
+```bash
+mvn exec:java -Dexec.mainClass="com.smartfactory.gui.SmartFactoryGUI"
+```
+
+### Run the Integration Test
+```bash
+mvn exec:java -Dexec.mainClass="com.smartfactory.SmartFactoryTest" \
+  -Dexec.includePluginDependencies=true \
+  -Dexec.classpathScope=test
+```
+
+### Default Ports
+| Service | Port |
+|---|---|
+| MachineHealthMonitor | 50051 |
+| ProductionLineController | 50052 |
+| AlertMaintenanceService | 50053 |
+
+### Authentication
+All services require API key in gRPC metadata header:
+- Key: `api-key`
+- Value: `smart-factory-2026`
