@@ -101,7 +101,7 @@ public class MachineHealthPanel extends JPanel {
                             "Operational: " + response.getIsOperational() + "\n" +
                             "Status:      " + response.getStatusMessage());
         } else {
-            statusOutput.setText("❌ Failed to get machine status");
+            statusOutput.setText("[ERROR] Failed to get machine status");
         }
     }
 
@@ -171,7 +171,7 @@ public class MachineHealthPanel extends JPanel {
                     @Override
                     public void onError(Throwable t) {
                         SwingUtilities.invokeLater(() -> {
-                            streamOutput.append("❌ Stream error: "
+                            streamOutput.append("[ERROR] Stream error: "
                                     + t.getMessage() + "\n");
                             resetStreamButtons();
                         });
@@ -269,7 +269,7 @@ public class MachineHealthPanel extends JPanel {
     private void sendSensorData() {
         int rowCount = sensorTableModel.getRowCount();
         if (rowCount == 0) {
-            sensorSummaryOutput.setText("❌ No sensor readings to send");
+            sensorSummaryOutput.setText("[ERROR] No sensor readings to send");
             return;
         }
 
@@ -292,15 +292,15 @@ public class MachineHealthPanel extends JPanel {
             SensorDataSummary summary = client.reportSensorData(readings);
             if (summary != null) {
                 sensorSummaryOutput.setText(
-                        "✅ Readings received: " + summary.getReadingsReceived() + "\n" +
+                        "[SUCCESS] Readings received: " + summary.getReadingsReceived() + "\n" +
                                 "   Avg Temperature: " + summary.getAverageTemperature() + " °C\n" +
                                 "   Summary: " + summary.getSummaryMessage());
             } else {
-                sensorSummaryOutput.setText("❌ Failed to send sensor data");
+                sensorSummaryOutput.setText("[ERROR] Failed to send sensor data");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            sensorSummaryOutput.setText("❌ Interrupted: " + e.getMessage());
+            sensorSummaryOutput.setText("[ERROR] Interrupted: " + e.getMessage());
         }
     }
 }
