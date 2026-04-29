@@ -49,12 +49,34 @@ smart-factory-monitoring-system/
 │   │   ├── java/
 │   │   │   └── com/smartfactory/
 │   │   │       ├── server/
+│   │   │       │   ├── MachineHealthServer.java
+│   │   │       │   ├── MachineHealthMonitorImpl.java
+│   │   │       │   ├── ProductionLineServer.java
+│   │   │       │   ├── ProductionLineControllerImpl.java
+│   │   │       │   ├── AlertMaintenanceServer.java
+│   │   │       │   ├── AlertMaintenanceServiceImpl.java
+│   │   │       │   ├── MachineData.java
+│   │   │       │   ├── MachineRegistry.java
+│   │   │       │   └── AuthInterceptor.java
 │   │   │       ├── client/
+│   │   │       │   ├── SmartFactoryClient.java
+│   │   │       │   └── MetadataUtils.java
 │   │   │       ├── gui/
+│   │   │       │   ├── SmartFactoryGUI.java
+│   │   │       │   ├── MachineHealthPanel.java
+│   │   │       │   ├── ProductionLinePanel.java
+│   │   │       │   └── AlertMaintenancePanel.java
 │   │   │       └── naming/
+│   │   │           ├── ServiceRegistrar.java
+│   │   │           └── ServiceDiscovery.java
 │   │   └── proto/
+│   │       ├── machine_health.proto
+│   │       ├── production_line.proto
+│   │       └── alert_maintenance.proto
 │   └── test/
 │       └── java/
+│           └── com/smartfactory/
+│               └── SmartFactoryTest.java
 ├── pom.xml
 └── README.md
 ```
