@@ -1,0 +1,11 @@
+{
+    "java.project.sourcePaths": [
+        "src/main/java",
+        "src/test/java",
+        "target/generated-sources/protobuf/java",
+        "target/generated-sources/protobuf/grpc-java"
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.autobuild.enabled": true,
+    "java.compile.nullAnalysis.mode": "disabled"
+}
