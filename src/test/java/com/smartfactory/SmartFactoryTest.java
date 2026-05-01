@@ -1,16 +1,25 @@
 package com.smartfactory;
 
-import com.smartfactory.grpc.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import com.smartfactory.client.SmartFactoryClient;
+import com.smartfactory.grpc.AlertResponse;
+import com.smartfactory.grpc.MachineControlResponse;
+import com.smartfactory.grpc.MachineStatusResponse;
+import com.smartfactory.grpc.MaintenanceReport;
+import com.smartfactory.grpc.MaintenanceSummary;
+import com.smartfactory.grpc.ProductionCommand;
+import com.smartfactory.grpc.ProductionStatus;
+import com.smartfactory.grpc.SensorData;
+import com.smartfactory.grpc.SensorDataSummary;
+import com.smartfactory.grpc.TemperatureReading;
 import com.smartfactory.naming.ServiceDiscovery;
 import com.smartfactory.server.AlertMaintenanceServer;
 import com.smartfactory.server.MachineHealthServer;
 import com.smartfactory.server.ProductionLineServer;
-import com.smartfactory.client.SmartFactoryClient;
-import io.grpc.stub.StreamObserver;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import io.grpc.stub.StreamObserver;
 
 /**
  * Manual integration test for the Smart Factory Monitoring System.
@@ -18,8 +27,6 @@ import java.util.logging.Logger;
  * gRPC communication patterns.
  */
 public class SmartFactoryTest {
-
-    private static final Logger logger = Logger.getLogger(SmartFactoryTest.class.getName());
 
     public static void main(String[] args) throws Exception {
 
